@@ -45,3 +45,11 @@ button {
 button:hover {
     background-color: #d62839;
 }
+.navigation {
+    margin-top: 20px; /* Space between search results and navigation */
+}
+
+.navigation button {
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text */
+}

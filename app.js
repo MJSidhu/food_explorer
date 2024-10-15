@@ -49,6 +49,18 @@ app.get('/search', (req, res) => {
     });
 });
 
+// Reviews route
+app.get('/reviews', (req, res) => {
+    const searchQuery = req.query.search || '';
+    console.log(`Searching for reviews for: ${searchQuery}`); // Log the search query
+    const query = `SELECT * FROM reviews WHERE restaurant_name LIKE ?`;
+
+    db.query(query, [`%${searchQuery}%`], (err, results) => {
+        if (err) return res.status(500).json({ error: 'Database query failed' });
+        res.json(results);
+    });
+});
+
 // Start server
 const port = 3000;
 app.listen(port, () => {
