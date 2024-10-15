@@ -5,9 +5,9 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); // Serve static files from the public directory
+app.use(express.static('public')); // Serve static files
 
-// MySQL connection
+// MySQL connection setup
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -17,32 +17,40 @@ const db = mysql.createConnection({
 
 db.connect((err) => {
     if (err) {
-        console.log('Database connection failed:', err);
+        console.error('Database connection failed:', err);
         return;
     }
     console.log('Connected to the database.');
 });
 
-// API endpoint for searching restaurants
+// Login route
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
+
+    db.query(query, [username, password], (err, results) => {
+        if (err) return res.status(500).json({ error: 'Database query failed' });
+        if (results.length > 0) {
+            res.status(200).json({ message: 'Login successful' });
+        } else {
+            res.status(401).json({ message: 'Invalid username or password' });
+        }
+    });
+});
+
+// Search route
 app.get('/search', (req, res) => {
-    const searchQuery = req.query.search;
+    const searchQuery = req.query.search || '';
     const query = `SELECT * FROM restaurants WHERE location LIKE ? OR type_of_food LIKE ?`;
 
     db.query(query, [`%${searchQuery}%`, `%${searchQuery}%`], (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+        if (err) return res.status(500).json({ error: 'Database query failed' });
         res.json(results);
     });
 });
 
-// Define a route for the root URL
-app.get('/', (req, res) => {
-    res.send('Welcome to the Food Explorer API! Use the /search endpoint to find restaurants.');
-});
-
-// Start the server
+// Start server
 const port = 3000;
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
 });
